@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!--
+/**
+* Magento
+*
+* NOTICE OF LICENSE
+*
+ * @category   Persian Magento
+ * @package    Idpay_Idpay
+ * @copyright  Copyright (c) 1396 Persian Magento (http://www.persian-magento.ir)
+*/
+-->
+<config>
+	<modules>
+		<Idpay_Idpay>
+			<version>1.0.1</version>
+		</Idpay_Idpay>
+	</modules>
+	
+    <global>
+        <models>
+            <zarinpalweb>
+                <class>Idpay_Idpay_Model</class>
+            </zarinpalweb>
+        </models>
+		
+        <helpers>
+            <zarinpalweb>
+                <class>Idpay_Idpay_Helper</class>
+            </zarinpalweb>
+        </helpers>
+		
+        <resources>
+            <zarinpalweb_setup>
+                <setup>
+                    <module>Idpay_Idpay</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </zarinpalweb_setup>			
+            <zarinpalweb_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </zarinpalweb_write>			
+            <zarinpalweb_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </zarinpalweb_read>
+        </resources>
+		
+        <blocks>
+            <zarinpalweb>
+				<class>Idpay_Idpay_Block</class>
+			</zarinpalweb>
+        </blocks>
+    </global>
+
+    <frontend>
+        <secure_url>
+            <zarinpalweb_redirect>/zarinpalweb/redirect</zarinpalweb_redirect>
+        </secure_url>		
+        <routers>
+            <zarinpalweb>
+                <use>standard</use>
+                <args>
+                    <module>Idpay_Idpay</module>
+                    <frontName>zarinpalweb</frontName>
+                </args>
+            </zarinpalweb>
+        </routers>		
+        <translate>
+            <modules>
+                <Idpay_Idpay>
+                    <files>
+                        <default>Idpay_Idpay.csv</default>
+                    </files>
+                </Idpay_Idpay>
+            </modules>
+        </translate>		
+        <layout>
+            <updates>
+                <zarinpalweb>
+                    <file>zarinpalweb.xml</file>
+                </zarinpalweb>
+            </updates>
+        </layout>
+    </frontend>
+
+    <adminhtml>
+        <translate>
+            <modules>
+                <Idpay_Idpay>
+                    <files>
+                        <default>Idpay_Idpay.csv</default>
+                    </files>
+                </Idpay_Idpay>
+            </modules>
+        </translate>
+    </adminhtml>
+	
+	<persianmagento>
+		<zarinpalweb>
+			<verify_url>http://www.persian-magento.ir</verify_url>
+		</zarinpalweb>
+	</persianmagento>
+	
+    <default>
+        <payment>
+            <zarinpalweb>
+                <active>0</active>
+                <model>zarinpalweb/zarinpalweb</model>
+				<order_status>1</order_status>
+                <second_order_status>3</second_order_status>
+                <allowspecific>0</allowspecific>
+                <title>Zarinpal Online Payment</title>
+				<gateway>0</gateway>
+				<payer_Id>0</payer_Id>
+				<pgwpay_url>0</pgwpay_url>
+            </zarinpalweb>
+        </payment>
+    </default>
+	
+</config>
