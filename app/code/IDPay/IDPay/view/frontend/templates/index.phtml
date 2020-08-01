@@ -1,0 +1,6 @@
+<?php
+$result = $this->redirect();
+if (!empty($result['state']) && !$result['state']) {
+    echo $result['result'];
+}
+?>

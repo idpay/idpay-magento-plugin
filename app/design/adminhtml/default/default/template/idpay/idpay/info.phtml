@@ -1,0 +1,16 @@
+<?php
+ /**
+ * Magento
+ *
+ * @category   Idpay
+ * @package    Idpay_Idpay
+ */ 
+?>
+<?php 
+	echo $this->getMethod()->getTitle() . '<br/>';
+	if ($this->getInfo()->getLastTransId() == '') {
+		echo $this->__('Payment has not been processed yet.') . '<br/>';
+	} else {
+		echo $this->__('Idpay Transaction ID: %s', $this->htmlEscape($this->getInfo()->getLastTransId())) . '<br/>';
+	}
+?>

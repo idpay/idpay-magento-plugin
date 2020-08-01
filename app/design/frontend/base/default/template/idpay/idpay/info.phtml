@@ -1,0 +1,16 @@
+<?php
+ /**
+ * Magento
+ *
+ * @category   Idpay
+ * @package    Idpay_Idpay
+ */
+?>
+
+<?php 
+	echo '<img src="'. $this->getPaymentImageSrc() .'" style="width: 70px;"/>'. $this->getMethod()->getTitle() . '<br/>';
+	if ($this->getInfo()->getLastTransId() != '') {
+		echo sprintf($this->__('Idpay Transaction ID: %s'), $this->htmlEscape($this->getInfo()->getLastTransId())) . '<br/>';
+	}
+
+?>

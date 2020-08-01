@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
+    <default>
+        <payment>
+            <idpay>
+                <active>1</active>
+                <title>IDPay</title>
+                <order_status>pending_payment</order_status>
+                <after_order_status>holded</after_order_status>
+                <payment_action>true</payment_action>
+                <model>IDPay\IDPay\Model\IDPay</model>
+                <group>offline</group>
+                <sort_order>1</sort_order>
+                <sandbox>1</sandbox>
+                <currency>0</currency>
+                <success_massage>پرداخت شما با موفقیت انجام شد. کد رهگیری: {track_id}</success_massage>
+                <failed_massage>پرداخت شما ناموفق بوده است. لطفا مجددا تلاش نمایید یا در صورت بروز اشکال با مدیر سایت تماس بگیرید.</failed_massage>
+            </idpay>
+        </payment>
+    </default>
+</config>

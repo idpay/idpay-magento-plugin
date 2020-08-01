@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<!--
+/**
+* Magento
+*
+ * @category   Idpay
+ * @package    Idpay_Idpay
+*/
+-->
+<config>
+	<modules>
+		<Idpay_Idpay>
+			<version>1.0.0</version>
+		</Idpay_Idpay>
+	</modules>
+	
+    <global>
+        <models>
+            <idpay>
+                <class>Idpay_Idpay_Model</class>
+            </idpay>
+        </models>
+		
+        <helpers>
+            <idpay>
+                <class>Idpay_Idpay_Helper</class>
+            </idpay>
+        </helpers>
+		
+        <resources>
+            <idpay_setup>
+                <setup>
+                    <module>Idpay_Idpay</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </idpay_setup>
+            <idpay_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </idpay_write>
+            <idpay_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </idpay_read>
+        </resources>
+		
+        <blocks>
+            <idpay>
+				<class>Idpay_Idpay_Block</class>
+			</idpay>
+        </blocks>
+    </global>
+
+    <frontend>
+        <secure_url>
+            <idpay_redirect>/idpay/redirect</idpay_redirect>
+        </secure_url>		
+        <routers>
+            <idpay>
+                <use>standard</use>
+                <args>
+                    <module>Idpay_Idpay</module>
+                    <frontName>idpay</frontName>
+                </args>
+            </idpay>
+        </routers>		
+        <translate>
+            <modules>
+                <Idpay_Idpay>
+                    <files>
+                        <default>Idpay_Idpay.csv</default>
+                    </files>
+                </Idpay_Idpay>
+            </modules>
+        </translate>		
+        <layout>
+            <updates>
+                <idpay>
+                    <file>idpay.xml</file>
+                </idpay>
+            </updates>
+        </layout>
+    </frontend>
+
+    <adminhtml>
+        <translate>
+            <modules>
+                <Idpay_Idpay>
+                    <files>
+                        <default>Idpay_Idpay.csv</default>
+                    </files>
+                </Idpay_Idpay>
+            </modules>
+        </translate>
+    </adminhtml>
+	
+	<idpay>
+		<idpay>
+			<verify_url>https://idpay.ir</verify_url>
+		</idpay>
+	</idpay>
+	
+    <default>
+        <payment>
+            <idpay>
+                <active>0</active>
+                <model>idpay/idpay</model>
+				<order_status>1</order_status>
+				<sandbox>1</sandbox>
+                <second_order_status>3</second_order_status>
+                <allowspecific>0</allowspecific>
+                <title>Idpay Online Payment</title>
+				<payer_Id>0</payer_Id>
+            </idpay>
+        </payment>
+    </default>
+	
+</config>
