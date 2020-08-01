@@ -22,5 +22,4 @@ class Idpay_Idpay_Block_Info extends Mage_Payment_Block_Info
         $this->setTemplate ( 'idpay/idpay/pdf/info.phtml' );
         return $this->toHtml ();
     }
-
 }
