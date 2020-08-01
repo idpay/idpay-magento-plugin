@@ -63,12 +63,19 @@ class Idpay_Idpay_Model_idpay extends Mage_Payment_Model_Method_Abstract
         $Description = sprintf( $this->_getHelper()->__("Pay for Order %d"), $orderId );
         $callBackUrl = ($this->getConfigData ('ssl_enabled')? 'https://' :'http://').$_SERVER['HTTP_HOST'].'/index.php' .'/idpay/redirect/success/';
 
+        $billing  = $this->getOrder()->getBillingAddress();
+        if ($this->getOrder()->getBillingAddress()->getEmail()) {
+            $email = $this->getOrder()->getBillingAddress()->getEmail();
+        } else {
+            $email = $this->getOrder()->getCustomerEmail();
+        }
+
         $data = [
             'order_id' => $orderId,
             'amount'   => $amount,
-//            'name'     => $name,
-//            'phone'    => $phone,
-//            'mail'     => $mail,
+            'name'     => $billing->getFirstname() . ' ' . $billing->getLastname(),
+            'phone'     => $billing->getTelephone(),
+            'mail'     => $email,
             'desc'     => $Description,
             'callback' => $callBackUrl,
         ];
