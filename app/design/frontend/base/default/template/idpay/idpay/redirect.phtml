@@ -1,5 +1,5 @@
 <?php
- /**
+/**
  * Magento
  *
  * @category   Idpay
@@ -8,26 +8,26 @@
 ?>
 
 <style type="text/css">
-.titr {
-	font-family: Tahoma;
-	font-size: 14px;
-}
+    .titr {
+        font-family: Tahoma;
+        font-size: 14px;
+    }
 </style>
 <center>
     <span class="titr"><b><?php echo $this->__('Connecting to Idpay...') ?></b>
     </span>
 </center>
 <form id="Idpay_Idpay" action="<?php echo $this->getFormAction();?>" method="POST">
-<?php if (is_array($this->getFormData())): ?>
-    <?php foreach ($this->getFormData() as $name => $value): ?>
-        <input type="hidden" name="<?php echo $name; ?>" value="<?php echo $value; ?>"/>
-    <?php endforeach; ?>
-<?php endif; ?>
+    <?php if (is_array($this->getFormData())): ?>
+        <?php foreach ($this->getFormData() as $name => $value): ?>
+            <input type="hidden" name="<?php echo $name; ?>" value="<?php echo $value; ?>"/>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </form>
 
 <script type="text/javascript">
-//<![CDATA[
+    //<![CDATA[
     var paymentform = document.getElementById('Idpay_Idpay');
     window.onload = paymentform.submit();
-//]]>
+    //]]>
 </script>

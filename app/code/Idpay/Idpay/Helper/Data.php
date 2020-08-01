@@ -11,7 +11,7 @@
 
 class Idpay_Idpay_Helper_Data extends Mage_Payment_Helper_Data
 {
-	public function getBankMessage($messageNumber) {
+    public function getBankMessage($messageNumber) {
         switch ($messageNumber){
             case 1:
                 return 'پرداخت انجام نشده است';
@@ -50,5 +50,5 @@ class Idpay_Idpay_Helper_Data extends Mage_Payment_Helper_Data
                 return 'به دریافت کننده واریز شد';
                 break;
         }
-	}
+    }
 }
