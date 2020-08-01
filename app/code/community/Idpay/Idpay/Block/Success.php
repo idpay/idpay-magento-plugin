@@ -129,7 +129,7 @@ class Idpay_Idpay_Block_Success extends Mage_Core_Block_Template
     public function addTransaction($order, $txnId, $paymentData = array()) {
         $transaction = Mage::getModel('sales/order_payment_transaction');
         $transaction->setOrderId($order->getId());
-        $transaction->setTxntId($txnId);
+        $transaction->setTxnId($txnId);
         $transaction->setTxnType('capture');
         $transaction->setIsClosed(true);
 
