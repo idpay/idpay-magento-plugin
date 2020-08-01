@@ -109,7 +109,7 @@ class Idpay_Idpay_Block_Success extends Mage_Core_Block_Template
 
                     $status = $this->getConfigData ('second_order_status');
                     $status = !empty($status)? $status : Mage_Sales_Model_Order::STATE_COMPLETE;
-                    $this->_order->addStatusToHistory ( $status, sprintf($this->__('Card Hashed Value: %s'), $result->payment->hashed_card_no), true );
+                    $this->_order->addStatusToHistory ( $status, sprintf($this->__('Card Hashed Value: %s'), $result->payment->hashed_card_no), false );
                     $this->_order->addStatusToHistory ( $status, $message, true );
                     $this->_order->save ();
                     $this->_order->sendNewOrderEmail ();
