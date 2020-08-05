@@ -2,9 +2,9 @@
 /**
  * IDPay payment gateway
  *
- * @developer JMDMahdi, meysamrazmi, vispa
+ * @developer JMDMahdi
  * @publisher IDPay
- * @copyright (C) 2020 IDPay
+ * @copyright (C) 2018 IDPay
  * @license http://www.gnu.org/licenses/gpl-2.0.html GPLv2 or later
  *
  * http://idpay.ir
@@ -13,7 +13,7 @@ namespace IDPay\IDPay\Controller\Redirect;
 
 use Magento\Framework\App\Action\Context;
 
-class Index extends \Magento\Framework\App\Action\Action
+class Callback extends \Magento\Framework\App\Action\Action
 {
     protected $_resultPageFactory;
 
@@ -25,9 +25,8 @@ class Index extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-        $resultPage = $this->_resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set("انتقال به درگاه پرداخت");
-
-        return $resultPage;
+         $resultPage = $this->_resultPageFactory->create();
+         $resultPage->getConfig()->getTitle()->set("نتیجه پرداخت");
+         return $resultPage;
     }
 }

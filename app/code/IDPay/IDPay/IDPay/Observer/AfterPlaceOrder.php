@@ -2,9 +2,9 @@
 /**
  * IDPay payment gateway
  *
- * @developer JMDMahdi, meysamrazmi, vispa
+ * @developer JMDMahdi
  * @publisher IDPay
- * @copyright (C) 2020 IDPay
+ * @copyright (C) 2018 IDPay
  * @license http://www.gnu.org/licenses/gpl-2.0.html GPLv2 or later
  *
  * http://idpay.ir
@@ -18,11 +18,6 @@ class AfterPlaceOrder implements ObserverInterface
 {
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $orderId = $observer->getEvent()->getOrder()->getId();
-
-        $domain = ($_SERVER['HTTP_HOST'] != 'localhost') ? $_SERVER['HTTP_HOST'] : false;
-        setcookie('idpay_order_id', $orderId, time()+3600, '/', $domain, false);
-//        return true;
+        return true;
     }
-
 }

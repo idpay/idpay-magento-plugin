@@ -24,7 +24,6 @@ define(
                 template: 'IDPay_IDPay/payment/idpay'
             },
             placeOrder: function (data, event) {
-                console.log('22')
                 if (event) {
                     event.preventDefault();
                 }
@@ -36,7 +35,6 @@ define(
                     $(loginFormSelector).validation();
                     emailValidationResult = Boolean($(loginFormSelector + ' input[name=username]').valid());
                 }
-                console.log('33')
                 if (emailValidationResult && this.validate() && additionalValidators.validate()) {
                     this.isPlaceOrderActionAllowed(false);
                     placeOrder = placeOrderAction(this.getData(), false, this.messageContainer);
@@ -50,14 +48,12 @@ define(
             },
 
             selectPaymentMethod: function() {
-                console.log('44')
                 selectPaymentMethodAction(this.getData());
                 checkoutData.setSelectedPaymentMethod(this.item.method);
                 return true;
             },
 
             afterPlaceOrder: function () {
-                console.log('55')
                 window.location.replace(url.build('idpay/redirect/index/'));
             },
             /** Returns send check to info */

@@ -2,6 +2,6 @@
       xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd"
       layout="1column">
     <referenceContainer name="content">
-        <block class="IDPay\IDPay\Block\IDPay" template="index.phtml"/>
+        <block class="IDPay\IDPay\Block\IDPay" template="callback.phtml"/>
     </referenceContainer>
 </page>

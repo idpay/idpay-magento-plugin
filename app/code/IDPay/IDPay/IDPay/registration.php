@@ -2,9 +2,9 @@
 /**
  * IDPay payment gateway
  *
- * @developer JMDMahdi, meysamrazmi, vispa
+ * @developer JMDMahdi
  * @publisher IDPay
- * @copyright (C) 2020 IDPay
+ * @copyright (C) 2018 IDPay
  * @license http://www.gnu.org/licenses/gpl-2.0.html GPLv2 or later
  *
  * http://idpay.ir
