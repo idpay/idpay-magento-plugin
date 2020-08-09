@@ -22,7 +22,6 @@ class AfterPlaceOrder implements ObserverInterface
 
         $domain = ($_SERVER['HTTP_HOST'] != 'localhost') ? $_SERVER['HTTP_HOST'] : false;
         setcookie('idpay_order_id', $orderId, time()+3600, '/', $domain, false);
-//        return true;
     }
 
 }

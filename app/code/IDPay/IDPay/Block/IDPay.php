@@ -30,6 +30,7 @@ class IDPay extends \Magento\Framework\View\Element\Template
     protected $order;
     protected $response;
     protected $session;
+    protected $transactionBuilder;
 
     public function __construct(
         \Magento\Checkout\Model\Session $checkoutSession,
@@ -38,6 +39,7 @@ class IDPay extends \Magento\Framework\View\Element\Template
         Session $customer_session,
         RedirectFactory $redirectFactory,
         \Magento\Framework\App\Response\Http $response,
+        \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder,
         Template\Context $context,
         array $data
     ) {
@@ -49,6 +51,7 @@ class IDPay extends \Magento\Framework\View\Element\Template
         $this->messageManager = $messageManager;
         $this->redirectFactory = $redirectFactory;
         $this->response = $response;
+        $this->transactionBuilder = $transactionBuilder;
         parent::__construct($context, $data);
     }
 
@@ -73,7 +76,6 @@ class IDPay extends \Magento\Framework\View\Element\Template
 
     public function getOrderId()
     {
-//        return $this->_checkoutSession->getLastRealOrder()->getIncrementId();
         return isset($_COOKIE['idpay_order_id']) ? $_COOKIE['idpay_order_id'] : false;
     }
 
@@ -259,17 +261,19 @@ class IDPay extends \Magento\Framework\View\Element\Template
 
                     $this->addTransaction($this->order, $verify_track_id, (array)$result->payment);
 
-                    $this->order->addStatusToHistory($this->getAfterOrderStatus(), sprintf('<pre>%s</pre>', print_r($result, true)), false);
+                    $this->order->addStatusToHistory($this->getAfterOrderStatus(), sprintf('<pre>%s</pre>', print_r($result->payment, true)), false);
                     $this->order->save();
 
                     $this->changeStatus($this->getAfterOrderStatus(), $response['result']);
 
                     $this->messageManager->addSuccessMessage($response['result']);
-                    $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/success', array ('_secure' => true )));
-                    return;
+                    $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/success', ['_secure' => true ]));
                 }
             }
         }
+
+        setcookie("idpay_order_id", "", time() - 3600, "/");
+
         return $response;
     }
 
@@ -284,22 +288,17 @@ class IDPay extends \Magento\Framework\View\Element\Template
         $payment->setParentTransactionId(null);
 
         // Prepare transaction
-        $builder = Magento\Sales\Model\Order\Payment\Transaction\Builder::class;
-        $transaction = $payment->addTransaction(Transaction::TYPE_CAPTURE, null, true);
-        $transaction->setOrder($order)
-            //->setPayment($payment)
-            ->setOrderId($order->getId())
-            ->setPaymentId($payment->getEntityId())
+        $transaction = $this->transactionBuilder->setPayment($payment)
+            ->setOrder($order)
+            ->setFailSafe(true)
             ->setTransactionId($txnId)
-            ->setTxnId($txnId)
-            ->setTxnType(Transaction::TYPE_CAPTURE)
-            ->setAdditionalInformation(Transaction::RAW_DETAILS, (array) $paymentData)
-            ->setFailSafe(true);
-//            ->setIsClosed(true);
+            ->setAdditionalInformation([Transaction::RAW_DETAILS => (array) $paymentData])
+            ->build(Transaction::TYPE_CAPTURE);
 
-        foreach ($paymentData as $key => $value) {
-            $transaction->setAdditionalInformation($key, $value);
-        }
+        // Add transaction to payment
+        $payment->addTransactionCommentsToOrder($transaction, __('The authorized TransactionId is %1.', $txnId));
+        $payment->setParentTransactionId(null);
+
         // Save payment, transaction and order
         $payment->save();
         $order->save();

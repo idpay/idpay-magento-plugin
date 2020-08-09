@@ -15,15 +15,4 @@ class IDPay extends \Magento\Payment\Model\Method\AbstractMethod
 {
     protected $_code = 'idpay';
     protected $_isOffline = false;
-    protected $_instructions = 'sdf';
-
-    /**
-     * Get instructions text from config
-     *
-     * @return string
-     */
-    public function getInstructions()
-    {
-        return 'hey' . trim($this->getInfo()->getLastTransId());
-    }
 }

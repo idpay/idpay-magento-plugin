@@ -14,7 +14,7 @@
                 <sandbox>1</sandbox>
                 <currency>0</currency>
                 <success_massage>پرداخت شما با موفقیت انجام شد. کد رهگیری: {track_id}</success_massage>
-                <failed_massage>پرداخت شما ناموفق بوده است. لطفا مجددا تلاش نمایید یا در صورت بروز اشکال با مدیر سایت تماس بگیرید.</failed_massage>
+                <failed_massage>پرداخت شما ناموفق بوده است. لطفا مجددا تلاش نمایید یا در صورت بروز اشکال با مدیر سایت تماس بگیرید.کد رهگیری: {track_id}</failed_massage>
             </idpay>
         </payment>
     </default>
