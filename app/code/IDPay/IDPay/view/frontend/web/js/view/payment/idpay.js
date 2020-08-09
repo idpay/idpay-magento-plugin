@@ -3,10 +3,8 @@ define(
         'uiComponent',
         'Magento_Checkout/js/model/payment/renderer-list'
     ],
-    function (Component,
-              rendererList) {
+    function (Component, rendererList) {
         'use strict';
-        console.log('00')
         rendererList.push(
             {
                 type: 'idpay',
@@ -18,9 +16,7 @@ define(
                 redirectAfterPlaceOrder: true
             },
             afterPlaceOrder: function (data, event) {
-                console.log('11')
                 window.location.replace('idpay/redirect/index');
-
             }
         });
     }

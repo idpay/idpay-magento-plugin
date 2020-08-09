@@ -28,8 +28,7 @@ class Callback extends \Magento\Framework\App\Action\Action implements CsrfAware
 
     public function execute()
     {
-        $resultPage = $this->_resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set("نتیجه پرداخت");
+        $resultPage = $this->_resultPageFactory->create()->getConfig()->getTitle()->set("نتیجه پرداخت");
         return $resultPage;
     }
 

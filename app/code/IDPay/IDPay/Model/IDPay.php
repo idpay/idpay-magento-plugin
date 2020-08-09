@@ -14,5 +14,5 @@ namespace IDPay\IDPay\Model;
 class IDPay extends \Magento\Payment\Model\Method\AbstractMethod
 {
     protected $_code = 'idpay';
-    protected $_isOffline = false;
+    protected $_isOffline = true;
 }
