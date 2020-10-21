@@ -56,4 +56,14 @@ class Idpay_Idpay_RedirectController extends Mage_Core_Controller_Front_Action
 
         $this->getResponse ()->setBody ( $this->getLayout ()->createBlock ( $this->_successBlockType )->setOrder ( $order )->toHtml () );
     }
+
+    /**
+     * Validate Form Key
+     *
+     * @return bool
+     */
+    protected function _validateFormKey()
+    {
+        return true;
+    }
 }
