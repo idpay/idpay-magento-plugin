@@ -7,7 +7,7 @@
  * @copyright (C) 2020 IDPay
  * @license http://www.gnu.org/licenses/gpl-2.0.html GPLv2 or later
  *
- * http://idpay.ir
+ * https://idpay.ir
  */
 namespace IDPay\IDPay\Controller\Redirect;
 
@@ -28,16 +28,14 @@ class Callback extends \Magento\Framework\App\Action\Action implements CsrfAware
 
     public function execute()
     {
-        $resultPage = $this->_resultPageFactory->create()->getConfig()->getTitle()->set("نتیجه پرداخت");
-        return $resultPage;
+        return $this->_resultPageFactory->create();
     }
 
     /**
      * @inheritDoc
      */
-    public function createCsrfValidationException(
-        RequestInterface $request
-    ): ?InvalidRequestException {
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    {
         return null;
     }
 
