@@ -1,6 +1,6 @@
 == IDPay Gateway
 Contributors: JMDMahdi, meysamrazmi, vispa
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,5 +22,7 @@ the you should be able to see IDPay payment method in:
 Stores -> Configuration -> Sales -> Payment Methods -> Other Payment Methods -> IDPay
 
 == Change log
+
+- 10/24/20  V 1.0.1 add Get and Post handler for new IDPay update
 
 - 08/09/06  V 1.0.0 Initial revision
