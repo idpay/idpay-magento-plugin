@@ -9,10 +9,10 @@
 class Idpay_Idpay_Block_Success extends Mage_Core_Block_Template
 {
     protected function _toHtml() {
-        $status   = empty( $_POST['status'] ) ? NULL : $_POST['status'];
-        $track_id = empty( $_POST['track_id'] ) ? NULL : $_POST['track_id'];
-        $id       = empty( $_POST['id'] ) ? NULL : $_POST['id'];
-        $order_id = empty( $_POST['order_id'] ) ? NULL : $_POST['order_id'];
+        $status    = !empty($_POST['status'])  ? $_POST['status']   : (!empty($_GET['status'])  ? $_GET['status']   : NULL);
+        $track_id  = !empty($_POST['track_id'])? $_POST['track_id'] : (!empty($_GET['track_id'])? $_GET['track_id'] : NULL);
+        $id        = !empty($_POST['id'])      ? $_POST['id']       : (!empty($_GET['id'])      ? $_GET['id']       : NULL);
+        $order_id  = !empty($_POST['order_id'])? $_POST['order_id'] : (!empty($_GET['order_id'])? $_GET['order_id'] : NULL);
 
         $session = Mage::getSingleton('checkout/session');
 
@@ -21,7 +21,10 @@ class Idpay_Idpay_Block_Success extends Mage_Core_Block_Template
 
         $this->_order = new Mage_Sales_Model_Order();
         $this->_order->loadByIncrementId($session->getLastRealOrderId());
-        $this->_paymentInst = $this->_order->getPayment()->getMethodInstance();
+        $payment = $this->_order->getPayment();
+        if ($payment != false) {
+            $this->_paymentInst = $this->_order->getPayment()->getMethodInstance();
+        }
 
         $idpay_id = $session->getData( 'idpay_id' );
         if($order_id != $oderId || empty($id) || empty($oderId) || $id != $idpay_id){
@@ -105,7 +108,7 @@ class Idpay_Idpay_Block_Success extends Mage_Core_Block_Template
 
                     $this->addTransaction($this->_order, $verify_track_id, (array)$result->payment);
 
-                    $message = sprintf($this->__('Payment succeeded. Status: %s, Track id: %s, Card no: %s'), $verify_status, $verify_track_id, $verify_card_no);
+                    $message = sprintf($this->__('Payment succeeded. Track id: %s'), $verify_track_id);
 
                     $status = $this->getConfigData ('second_order_status');
                     $status = !empty($status)? $status : Mage_Sales_Model_Order::STATE_COMPLETE;
