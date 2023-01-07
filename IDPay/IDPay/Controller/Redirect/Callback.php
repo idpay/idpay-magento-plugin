@@ -15,12 +15,14 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\App\Action\Action;
 
-class Callback extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+class Callback extends Action implements CsrfAwareActionInterface
 {
     protected $_resultPageFactory;
 
-    public function __construct(Context $context, \Magento\Framework\View\Result\PageFactory $resultPageFactory)
+    public function __construct(Context $context, PageFactory $resultPageFactory)
     {
         $this->_resultPageFactory = $resultPageFactory;
         parent::__construct($context);

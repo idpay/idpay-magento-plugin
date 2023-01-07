@@ -10,8 +10,9 @@
  * https://idpay.ir
  */
 namespace IDPay\IDPay\Model;
+use Magento\Payment\Model\Method\AbstractMethod;
 
-class IDPay extends \Magento\Payment\Model\Method\AbstractMethod
+class IDPay extends AbstractMethod
 {
     protected $_code = 'idpay';
     protected $_isOffline = true;

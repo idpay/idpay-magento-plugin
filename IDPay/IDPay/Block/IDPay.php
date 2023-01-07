@@ -16,8 +16,14 @@ use Magento\Customer\Model\Session;
 use Magento\Framework\View\Element\Template;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction;
+use Magento\Checkout\Model\Session as SessionCheckout;
+use Magento\Sales\Model\OrderFactory;
+use Magento\Framework\Message\ManagerInterface;
+use Magento\Framework\App\Response\Http;
+use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 
-class IDPay extends \Magento\Framework\View\Element\Template
+
+class IDPay extends Template
 {
     protected $_checkoutSession;
     protected $_orderFactory;
@@ -32,17 +38,10 @@ class IDPay extends \Magento\Framework\View\Element\Template
     protected $session;
     protected $transactionBuilder;
 
-    public function __construct(
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Framework\Message\ManagerInterface $messageManager,
-        Session $customer_session,
-        RedirectFactory $redirectFactory,
-        \Magento\Framework\App\Response\Http $response,
-        \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder,
-        Template\Context $context,
-        array $data
-    ) {
+    public function __construct(SessionCheckout $checkoutSession,OrderFactory $orderFactory,ManagerInterface $messageManager,
+                                Session $customer_session,RedirectFactory $redirectFactory, Http $response,
+                                BuilderInterface $transactionBuilder,Template\Context $context, array $data)
+    {
         $this->customer_session = $customer_session;
         $this->_checkoutSession = $checkoutSession;
         $this->_orderFactory = $orderFactory;
@@ -55,12 +54,24 @@ class IDPay extends \Magento\Framework\View\Element\Template
         parent::__construct($context, $data);
     }
 
-    private function getOrder()
+    private function getOrder($orderId = null): Order
     {
         if (! $this->order) {
-            $this->order = $this->_orderFactory->create()->load($this->getOrderId());
+            $orderId = !empty($orderId) ? $orderId : ($_COOKIE['idpay_order_id'] ?? false) ;
+            $this->order = $this->_orderFactory->create()->load(($orderId));
+
         }
         return $this->order;
+    }
+
+    public  function isOnceEmpty( array $variables ): bool {
+        foreach ( $variables as $variable ) {
+            if ( empty( $variable ) ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function changeStatus($status, $msg = null)
@@ -74,11 +85,6 @@ class IDPay extends \Magento\Framework\View\Element\Template
         $order->save();
     }
 
-    public function getOrderId()
-    {
-        return isset($_COOKIE['idpay_order_id']) ? $_COOKIE['idpay_order_id'] : false;
-    }
-
     private function getConfig($value)
     {
         return $this->_scopeConfig->getValue('payment/idpay/' . $value, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
@@ -89,7 +95,7 @@ class IDPay extends \Magento\Framework\View\Element\Template
         return $this->getConfig('after_order_status');
     }
 
-    public function getOrderStatus()
+    public function getBeforeOrderStatus()
     {
         return $this->getConfig('order_status');
     }
@@ -104,9 +110,23 @@ class IDPay extends \Magento\Framework\View\Element\Template
         return str_replace(["{track_id}", "{order_id}"], [$track_id, $order_id], $this->getConfig('success_massage'));
     }
 
-    public function redirect()
+    private function saveDoubleSpendingId(string $orderId,string $transactionId): void
     {
-        if (!$this->getOrderId()) {
+          $domain = ($_SERVER['HTTP_HOST'] != 'localhost') ? $_SERVER['HTTP_HOST'] : false;
+         $hash = hash('sha256',($orderId . $transactionId));
+          setcookie('idpay_hash', $hash , time()+3600, '/', $domain, false);
+    }
+
+    private function isNotDoubleSpending(string $orderId,string $transactionId,string $cookieHash)
+    {
+        $hash = hash('sha256',($orderId . $transactionId));
+        return $hash != $cookieHash ;
+
+    }
+
+    public function doPayment(){
+        $orderId = $this->getOrder()->getId();
+        if (!$orderId) {
             $this->response->setRedirect($this->_urlBuilder->getUrl(''));
             return "";
         }
@@ -121,7 +141,7 @@ class IDPay extends \Magento\Framework\View\Element\Template
             $amount *= 10;
         }
 
-        $desc = "پرداخت سفارش شماره " . intval($this->getOrderId());
+        $desc = "پرداخت سفارش شماره " . $orderId;
         $callback = $this->_urlBuilder->getUrl('idpay/redirect/callback');
 
         if (empty($amount)) {
@@ -134,14 +154,10 @@ class IDPay extends \Magento\Framework\View\Element\Template
         }
 
         $billing  = $this->getOrder()->getBillingAddress();
-        if ($billing->getEmail()) {
-            $email = $billing->getEmail();
-        } else {
-            $email = $this->getOrder()->getCustomerEmail();
-        }
+        $email = !empty($billing->getEmail()) ? $billing->getEmail() :  $this->getOrder()->getCustomerEmail();
 
         $data = [
-            'order_id' => $this->getOrderId(),
+            'order_id' => $orderId,
             'amount' => $amount,
             'name' => $billing->getFirstname() . ' ' . $billing->getLastname(),
             'phone' => $billing->getTelephone(),
@@ -171,55 +187,59 @@ class IDPay extends \Magento\Framework\View\Element\Template
 
             $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/failure'));
         } else {
-            $this->_checkoutSession->setTestData($result->id);
-            $this->changeStatus($this->getOrderStatus());
+            $this->changeStatus($this->getBeforeOrderStatus());
             $response['state'] = true;
             $this->response->setRedirect($result->link);
         }
-
+        $this->saveDoubleSpendingId($orderId,$result->id);
         return $response;
     }
 
-    public function callback()
+
+    public function redirect()
     {
+       return $this->doPayment();
+    }
+
+    public function doCallback(){
         $data = $this->getRequest()->getParams();
-        $order = $this->getOrder();
+        // check not empty
+
+        $orderId = $data['order_id'] ?? null;
+        $transId = $data['id'] ?? null;
+        $status = $data['status'] ?? null;
+        $trackId = $data['track_id'] ?? null;
+        $amount = $data['amount'] ?? null;
         $response['state'] = false;
         $response['result'] = "";
 
-        if (!$order->getData() || empty($data['id']) || empty($data['order_id'])) {
+        $order =  $this->getOrder($orderId ?? false);
+        $orderData = $order->getData();
+
+        $validation = [
+            $orderId,
+            $transId,
+            $status,
+            $trackId,
+            $amount,
+            $order,
+            $orderData,
+        ];
+
+        if ( $order->getStatus() != Order::STATE_PENDING_PAYMENT || $this->isOnceEmpty($validation) ) {
             $response['result'] = "تراکنش موجود نیست یا قبلا اعتبار سنجی شده است.";
-        } else {
+        } elseif ($this->isNotDoubleSpending($orderId,$transId,$_COOKIE['idpay_hash'])){
+            $response['result'] = "در حال سواستفاده از تراکنش ";
+        }
+        else {
             $amount = intval($order->getGrandTotal());
+            $amount = (!empty($this->getConfig('currency')) && $this->getConfig('currency') == 1) ? ($amount * 10) : $amount;
 
-            if (!empty($this->getConfig('currency')) && $this->getConfig('currency') == 1) {
-                $amount *= 10;
-            }
+            if ($data['status'] == 10) {
 
-            $orderid = $this->getOrderId();
-            $pid = $data['id'];
-            $porder_id = $data['order_id'];
-
-            if ($data['status'] != 10) {
-                $response['result'] = sprintf('خطا: %s (کد: %s)', $this->getStatus($data['status']), $data['status']);
-                $this->changeStatus(Order::STATE_CANCELED, $response['result']);
-
-                $this->messageManager->addErrorMessage($response['result']);
-                $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/failure'));
-            } elseif (empty($pid) || empty($porder_id) || $porder_id != $orderid) {
-                $response['result'] = 'پارامتر های ورودی اشتباه هستند.';
-                $this->changeStatus(Order::STATE_CANCELED, $response['result']);
-
-                $this->messageManager->addErrorMessage($response['result']);
-                $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/failure'));
-            } else {
+                $data =['id' => $transId, 'order_id' => $orderId] ;
                 $api_key = $this->getConfig('api_key');
-                $sandbox = $this->getConfig('sandbox') == 1 ? 'true' : 'false';
-
-                $data = [
-                    'id' => $pid,
-                    'order_id' => $orderid,
-                ];
+                $sandbox =  $this->getConfig('sandbox') == 1 ? 'true' : 'false';
 
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, 'https://api.idpay.ir/v1.1/payment/verify');
@@ -228,7 +248,7 @@ class IDPay extends \Magento\Framework\View\Element\Template
                 curl_setopt($ch, CURLOPT_HTTPHEADER, [
                     'Content-Type: application/json',
                     'X-API-KEY:' . $api_key,
-                    'X-SANDBOX:' . $sandbox,
+                    'X-SANDBOX:' .$sandbox,
                 ]);
 
                 $result = curl_exec($ch);
@@ -239,7 +259,6 @@ class IDPay extends \Magento\Framework\View\Element\Template
                 if ($http_status != 200) {
                     $response['result'] = sprintf('خطا هنگام بررسی وضعیت تراکنش. کد خطا: %s, پیام خطا: %s', $result->error_code, $result->error_message);
                     $this->changeStatus(Order::STATE_CANCELED, $response['result']);
-
                     $this->messageManager->addErrorMessage($response['result']);
                     $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/failure'));
                 }
@@ -249,35 +268,42 @@ class IDPay extends \Magento\Framework\View\Element\Template
                 $verify_order_id = empty($result->order_id) ? null : $result->order_id;
                 $verify_amount = empty($result->amount) ? null : $result->amount;
 
-                if (empty($verify_status) || empty($verify_track_id) || empty($verify_amount) || $verify_amount != $amount || $verify_status != 100 || $verify_order_id !== $orderid) {
+                if (empty($verify_status) || empty($verify_track_id) || empty($verify_amount) || $verify_amount != $amount || $verify_status != 100) {
                     $response['result'] = $this->idpay_get_failed_message($verify_track_id, $verify_order_id);
                     $this->changeStatus(Order::STATE_CANCELED, $response['result']);
-
                     $this->messageManager->addErrorMessage($response['result']);
                     $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/failure'));
                 } else {
                     $response['state'] = true;
                     $response['result'] = $this->idpay_get_success_message($verify_track_id, $verify_order_id);
-
-                    $this->addTransaction($this->order, $verify_track_id, (array)$result->payment);
-
-                    $this->order->addStatusToHistory($this->getAfterOrderStatus(), sprintf('<pre>%s</pre>', print_r($result->payment, true)), false);
-                    $this->order->save();
-
+                    $this->addTransaction($order, $verify_track_id, (array)$result->payment);
+                    $order->addStatusToHistory($this->getAfterOrderStatus(), sprintf('<pre>%s</pre>', print_r($result->payment, true)), false);
+                    $order->save();
                     $this->changeStatus($this->getAfterOrderStatus(), $response['result']);
-
                     $this->messageManager->addSuccessMessage($response['result']);
-                    $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/success', ['_secure' => true ]));
+                    $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/success', ['_secure' => true]));
                 }
+            } else {
+                $errorStatus = sprintf('خطا: %s (کد: %s)', $this->getStatus($data['status']), $data['status']);
+                $errorTransaction = 'پارامتر های ورودی اشتباه هستند.';
+                $response['result'] = !empty($transId) ? $errorStatus : $errorTransaction;
+                $this->changeStatus(Order::STATE_CANCELED, $response['result']);
+                $this->messageManager->addErrorMessage($response['result']);
+                $this->response->setRedirect($this->_urlBuilder->getUrl('checkout/onepage/failure'));
             }
         }
 
         setcookie("idpay_order_id", "", time() - 3600, "/");
-
+        setcookie('idpay_hash', "" , time()-3600, '/');
         return $response;
     }
 
-    public function addTransaction($order, $txnId, $paymentData = [])
+    public function callback(): array
+    {
+      return $this->doCallback();
+    }
+
+    public function addTransaction($order, $txnId, $paymentData = []): int
     {
         $payment = $order->getPayment();
         $payment->setMethod('idpay');
@@ -307,45 +333,34 @@ class IDPay extends \Magento\Framework\View\Element\Template
         return  $transaction->getTransactionId();
     }
 
-    public function getStatus($messageNumber)
+    public function getStatus($messageNumber): string
     {
         switch ($messageNumber) {
             case 1:
                 return 'پرداخت انجام نشده است';
-                break;
             case 2:
                 return 'پرداخت ناموفق بوده است';
-                break;
             case 3:
                 return 'خطا رخ داده است';
-                break;
             case 4:
                 return 'بلوکه شده';
-                break;
             case 5:
                 return 'برگشت به پرداخت کننده';
-                break;
             case 6:
                 return 'برگشت خورده سیستمی';
-                break;
             case 7:
                 return 'انصراف از پرداخت';
-                break;
             case 8:
                 return 'به درگاه پرداخت منتقل شد';
-                break;
             case 10:
                 return 'در انتظار تایید پرداخت';
-                break;
             case 100:
                 return 'پرداخت تایید شده است';
-                break;
             case 101:
                 return 'پرداخت قبلا تایید شده است';
-                break;
             case 200:
                 return 'به دریافت کننده واریز شد';
-                break;
         }
+        return 'خطا رخ داده است';
     }
 }
